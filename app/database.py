@@ -9,10 +9,10 @@ def init_db():
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("DROP TABLE IF EXISTS support_calls")
+    
 
     cursor.execute("""
-    CREATE TABLE support_calls (
+    CREATE TABLE IF NOT EXISTS support_calls (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         audio_path TEXT,
         transcript TEXT,
@@ -24,6 +24,7 @@ def init_db():
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     """)
+
 
     conn.commit()
     conn.close()
