@@ -25,8 +25,8 @@ It performs well across accents and noisy environments and does not require trai
 - CPU-based transcription is slower but acceptable for a prototype system.
 
 # Commands to run: 
-cd customer-support-ai
-venv\Scripts\activate.bat  -->  activate.bat is a Windows batch script that activates your Python virtual environment.
+venv\Scripts\activate.bat (or) venv\Scripts\Activate.ps1
+- activate.bat is a Windows batch script that activates your Python virtual environment.
 python experiments/test_whisper.py
 
 ### LLM Output Validation Test
