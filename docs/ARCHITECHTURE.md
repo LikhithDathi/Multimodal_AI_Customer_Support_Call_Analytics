@@ -7,3 +7,8 @@ Audio File Upload
  → Structured JSON Output
  → Database Storage
  → Dashboard Visualization
+
+
+ # New Name
+
+ An AI-powered customer support intelligence platform
