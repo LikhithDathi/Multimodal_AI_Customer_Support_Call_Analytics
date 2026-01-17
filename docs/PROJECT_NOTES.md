@@ -126,6 +126,53 @@ The system stores processed call data in a relational database. Each record repr
 
 
 
+## Decision to Add Frontend Layer
+- After stabilizing the backend and AI pipeline, a frontend layer was planned to improve usability and demonstration.
+- The frontend is intended to consume existing REST APIs without modifying backend logic.
+- This separation ensures backend stability while enabling better visualization and interaction.
+
+
+## Frontend Technology Selection
+- Selected **Streamlit** for frontend development due to:
+  - Rapid development capability
+  - Minimal boilerplate
+  - Native support for data visualization
+- Streamlit allows quick integration with REST APIs using HTTP requests.
+- The choice prioritizes clarity and demonstration over heavy UI complexity.
+
+
+
+## Frontend Scope Definition
+- Frontend responsibilities are intentionally limited to:
+  - Uploading customer support call audio
+  - Displaying transcription results
+  - Displaying AI-extracted structured insights
+  - Visualizing aggregate analytics summaries
+- No authentication or advanced UI styling included to maintain simplicity.
+
+
+
+## Backend–Frontend Integration Strategy
+- Frontend communicates with backend using existing REST endpoints:
+  - POST `/analyze-call`
+  - GET `/calls`
+  - GET `/calls/summary`
+- No direct database access from the frontend.
+- Backend remains the single source of truth for processing and storage.
+
+
+
+## Incremental Development Approach
+- Frontend development planned after backend stabilization to avoid repeated redeployment.
+- APIs are treated as frozen contracts during frontend development.
+- Any required UI changes should not introduce backend refactoring.
+
+
+## Deployment Readiness Consideration
+- Frontend is designed to work with both local and deployed backend instances.
+- API base URL can be easily updated for deployment environments.
+- This approach simplifies future cloud deployment and demonstrations.
+
 
 
 
