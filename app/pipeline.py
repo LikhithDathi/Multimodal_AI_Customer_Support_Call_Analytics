@@ -22,28 +22,63 @@ def transcribe_audio(audio_path: str) -> str:
 
 
 # -----------------------------
-# LLM Analysis (Improved)
+# Unified Input Analysis (Call / Message)
+# -----------------------------
+def analyze_input(content: str, input_type: str = "call"):
+    """
+    Analyze either a call (audio file path) or a text message.
+    """
+    if input_type == "call":
+        transcript = transcribe_audio(content)
+    else:
+        transcript = content
+
+    return analyze_transcript(transcript)
+
+
+# -----------------------------
+# NEW: Deterministic Outcome Logic (SMALL ADDITION)
+# -----------------------------
+def derive_call_outcome(data: dict) -> str:
+    """
+    Derive call outcome from evidence to avoid politeness bias.
+    """
+    if (
+        data.get("resolution_action_taken") == "yes"
+        and data.get("customer_confirmation") == "yes"
+        and data.get("pending_followup") == "no"
+    ):
+        return "resolved"
+
+    return "unresolved"
+
+
+# -----------------------------
+# LLM Analysis (Improved, CORE KEPT)
 # -----------------------------
 def analyze_transcript(transcript: str) -> dict:
     """
     Analyze transcript using LLM with few-shot examples and semantic hints.
     Returns a dict compatible with CallAnalysis model.
     """
-    # Few-shot prompt for both sentiment and issue_category
+
     prompt = f"""
 You are a system that outputs structured JSON. ONLY return JSON, no explanations.
 
 Rules:
 - sentiment: positive, neutral, negative
-    - positive: happy, thankful, satisfied, polite
-    - neutral: factual, routine, no strong emotion
-    - negative: frustrated, angry, dissatisfied
 - issue_category: billing, delivery, refund, technical, other
 - urgency: low, medium, high
 - agent_behavior: polite, neutral, rude
-- call_outcome: resolved, unresolved
 
-Choose the category that best matches the transcript. Use 'other' ONLY if it does not fit any other category.
+Evidence fields:
+- resolution_action_taken: yes, no, unclear
+- customer_confirmation: yes, no, unclear
+- pending_followup: yes, no
+
+IMPORTANT:
+- Do NOT infer resolution from politeness.
+- Extract factual signals only.
 
 Examples:
 
@@ -53,7 +88,9 @@ JSON: {{
   "issue_category": "other",
   "urgency": "low",
   "agent_behavior": "polite",
-  "call_outcome": "resolved"
+  "resolution_action_taken": "unclear",
+  "customer_confirmation": "unclear",
+  "pending_followup": "no"
 }}
 
 Transcript: "I was charged twice for my order."
@@ -62,25 +99,9 @@ JSON: {{
   "issue_category": "billing",
   "urgency": "high",
   "agent_behavior": "neutral",
-  "call_outcome": "unresolved"
-}}
-
-Transcript: "My package hasn't arrived yet."
-JSON: {{
-  "sentiment": "negative",
-  "issue_category": "delivery",
-  "urgency": "high",
-  "agent_behavior": "neutral",
-  "call_outcome": "unresolved"
-}}
-
-Transcript: "I want a refund for the defective product."
-JSON: {{
-  "sentiment": "negative",
-  "issue_category": "refund",
-  "urgency": "high",
-  "agent_behavior": "neutral",
-  "call_outcome": "unresolved"
+  "resolution_action_taken": "no",
+  "customer_confirmation": "no",
+  "pending_followup": "yes"
 }}
 
 Transcript: "The app crashes when I log in."
@@ -89,16 +110,20 @@ JSON: {{
   "issue_category": "technical",
   "urgency": "high",
   "agent_behavior": "neutral",
-  "call_outcome": "unresolved"
+  "resolution_action_taken": "no",
+  "customer_confirmation": "no",
+  "pending_followup": "yes"
 }}
 
-Transcript: "I want to transfer money between my accounts."
+Transcript: "I reset your account and it works now. Yes, it is fixed."
 JSON: {{
-  "sentiment": "neutral",
-  "issue_category": "other",
+  "sentiment": "positive",
+  "issue_category": "technical",
   "urgency": "low",
   "agent_behavior": "polite",
-  "call_outcome": "resolved"
+  "resolution_action_taken": "yes",
+  "customer_confirmation": "yes",
+  "pending_followup": "no"
 }}
 
 Now analyze the following transcript and produce ONLY valid JSON:
@@ -116,13 +141,18 @@ Transcript:
         "issue_category": "other",
         "urgency": "low",
         "agent_behavior": "neutral",
-        "call_outcome": "unresolved",
+        "resolution_action_taken": "unclear",
+        "customer_confirmation": "unclear",
+        "pending_followup": "no",
     }
 
     if not parsed:
         retry_prompt = f"""
 ONLY return valid JSON. No explanations.
-Use fallback values if uncertain:
+If unsure, mark values as "unclear".
+Do NOT infer resolution from politeness.
+
+Fallback:
 {json.dumps(fallback)}
 
 Transcript:
@@ -131,34 +161,31 @@ Transcript:
         retry_raw = _call_llm(retry_prompt)
         parsed = _extract_json(retry_raw)
 
+    analysis = parsed or fallback
+
+    # ✅ NEW: derive outcome instead of trusting LLM
+    analysis["call_outcome"] = derive_call_outcome(analysis)
+
     # Ensure it matches CallAnalysis model
     try:
-        return CallAnalysis(**(parsed or fallback)).dict()
+        return CallAnalysis(**analysis).dict()
     except Exception:
-        return fallback
+        analysis["call_outcome"] = "unresolved"
+        return analysis
 
 
 # -----------------------------
-# Helpers
+# Helpers (UNCHANGED)
 # -----------------------------
 def _call_llm(prompt: str) -> str:
-    """
-    Call Ollama LLM with no unsupported kwargs.
-    """
     response = ollama.chat(
         model=OLLAMA_MODEL,
         messages=[{"role": "user", "content": prompt}],
-        # Remove temperature, Ollama SDK doesn't support this directly
     )
     return response["message"]["content"]
 
 
-
 def _extract_json(text: str) -> dict | None:
-    """
-    Safely extract JSON object from LLM output.
-    Handles extra text or minor formatting issues.
-    """
     if not text:
         return None
 

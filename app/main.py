@@ -1,15 +1,23 @@
 import os
 import uuid
 import shutil
-import json
-import re
 import asyncio
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 # Import AI pipeline + DB functions
-from app.pipeline import transcribe_audio, analyze_transcript
-from app.database import init_db, insert_call, fetch_all_calls, fetch_summary
+from app.pipeline import (
+    transcribe_audio,
+    analyze_transcript,
+    analyze_input,
+)
+from app.database import (
+    init_db,
+    insert_call,
+    fetch_all_calls,
+    fetch_summary,
+)
 
 # -----------------------------
 # FastAPI App
@@ -28,7 +36,8 @@ app.add_middleware(
 # -----------------------------
 # Upload Folder
 # -----------------------------
-UPLOAD_DIR = os.path.join("data", "uploads")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+UPLOAD_DIR = os.path.join(BASE_DIR, "data", "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # -----------------------------
@@ -38,6 +47,12 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 def startup_event():
     init_db()
 
+# -----------------------------
+# Request Schema
+# -----------------------------
+class AnalyzeRequest(BaseModel):
+    input_type: str  # "call" or "message"
+    content: str     # audio file path OR message text
 
 # -----------------------------
 # Health check
@@ -46,9 +61,8 @@ def startup_event():
 def root():
     return {"message": "Customer Support Call Analytics API is running"}
 
-
 # -----------------------------
-# Analyze Audio Endpoint
+# Analyze Audio Upload (CALL)
 # -----------------------------
 @app.post("/analyze-call")
 async def analyze_call(file: UploadFile = File(...)):
@@ -61,25 +75,41 @@ async def analyze_call(file: UploadFile = File(...)):
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        # Run pipeline in a thread
-        transcript, insights = await asyncio.to_thread(run_pipeline_safe, file_path)
+        # Run pipeline in background thread
+        transcript, insights = await asyncio.to_thread(
+            run_pipeline_safe,
+            file_path
+        )
 
         # Save results to DB
         insert_call(
             audio_path=file_path,
             transcript=transcript,
-            insights=insights
+            insights=insights,
         )
 
         return {
             "transcript": transcript,
-            "insights": insights
+            "insights": insights,
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
+# -----------------------------
+# Analyze Call OR Message (Unified)
+# -----------------------------
+@app.post("/analyze")
+def analyze(payload: AnalyzeRequest):
+    """
+    Handles:
+    - Calls (audio file path)
+    - Messages (plain text)
+    """
+    return analyze_input(
+        payload.content,
+        input_type=payload.input_type,
+    )
 
 # -----------------------------
 # Get All Calls
@@ -97,11 +127,10 @@ def get_all_calls():
             "urgency": row[5],
             "agent_behavior": row[6],
             "call_outcome": row[7],
-            "created_at": row[8]
+            "created_at": row[8],
         }
         for row in rows
     ]
-
 
 # -----------------------------
 # Get Summary
@@ -110,49 +139,13 @@ def get_all_calls():
 def get_summary():
     return fetch_summary()
 
-
 # -----------------------------
 # Helpers
 # -----------------------------
 def run_pipeline_safe(file_path: str):
-    """Run transcription + LLM analysis safely"""
+    """
+    Run transcription + LLM analysis safely.
+    """
     transcript = transcribe_audio(file_path)
-    insights = analyze_transcript(transcript)  # this returns dict already
+    insights = analyze_transcript(transcript)
     return transcript, insights
-
-
-
-def analyze_transcript_safe(transcript: str):
-    """
-    Calls your LLM/AI analysis and safely parses JSON, even if extra text is returned.
-    """
-    raw_output = analyze_transcript(transcript)  # Your existing LLM function
-
-    # Try to extract first JSON object
-    match = re.search(r"\{.*\}", raw_output, re.DOTALL)
-    if not match:
-        # Fallback to defaults
-        return {
-            "sentiment": "neutral",
-            "issue_category": "other",
-            "urgency": "low",
-            "agent_behavior": "neutral",
-            "call_outcome": "unresolved"
-        }
-
-    candidate = match.group(0)
-    try:
-        return json.loads(candidate)
-    except json.JSONDecodeError:
-        try:
-            import json5
-            return json5.loads(candidate)
-        except Exception:
-            # Absolute fallback
-            return {
-                "sentiment": "neutral",
-                "issue_category": "other",
-                "urgency": "low",
-                "agent_behavior": "neutral",
-                "call_outcome": "unresolved"
-            }
