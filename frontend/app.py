@@ -2,17 +2,6 @@ import streamlit as st
 import requests
 from datetime import datetime
 
-DEFAULT_STATE = {
-    "view_mode": "📋 Card View",
-    "sort_order": "Newest First",
-    "show_details": True,
-    "prev_selected_call": None,
-}
-
-for key, value in DEFAULT_STATE.items():
-    if key not in st.session_state:
-        st.session_state[key] = value
-
 
 def format_timestamp(ts: str):
     dt = datetime.fromisoformat(ts)
@@ -83,7 +72,7 @@ if page == "Analyze Call":
                 st.json(data["insights"])
 
 # -----------------------------
-# Call History (SIMPLE TABLE)
+# Call History
 # -----------------------------
 elif page == "Call History":
     st.title("🗂 Call History")
@@ -318,10 +307,6 @@ elif page == "Call History":
             if 'show_details' not in st.session_state:
                 st.session_state.show_details = True
             
-            # Track the previously selected call
-            if 'prev_selected_call' not in st.session_state:
-                st.session_state.prev_selected_call = None
-            
             # Call selection at the top (only show filtered calls)
             call_options = [f"Call #{c['id']}" for c in sorted_calls]
             if not call_options:
@@ -338,11 +323,6 @@ elif page == "Call History":
                 # Get selected call
                 selected_id = int(selected_call_option.replace("Call #", ""))
                 selected_call = next((c for c in sorted_calls if c['id'] == selected_id), None)
-                
-                # AUTO-SHOW DETAILS: If user selects a different call, show details automatically
-                if (selected_call and st.session_state.prev_selected_call != selected_id):
-                    st.session_state.show_details = True
-                    st.session_state.prev_selected_call = selected_id
             
             # Simple buttons row
             col1, col2, col3 = st.columns(3)
@@ -368,7 +348,6 @@ elif page == "Call History":
                 # Clear button - hides details
                 if st.button("🗑️ Clear", use_container_width=True):
                     st.session_state.show_details = False
-                    st.session_state.prev_selected_call = None
             
             # --- Details Pane ---
             st.markdown("---")
@@ -387,35 +366,23 @@ elif page == "Call History":
                 with col3:
                     st.metric("Sentiment", selected_call.get('sentiment', 'N/A').capitalize())
                 
-                # Additional info
+                # Additional info (from your schema)
                 col4, col5 = st.columns(2)
                 with col4:
                     st.write(f"**Urgency:** {selected_call.get('urgency', 'N/A').capitalize()}")
+                    st.write(f"**Agent Behavior:** {selected_call.get('agent_behavior', 'N/A').capitalize()}")
                 with col5:
                     st.write(f"**Time:** {format_timestamp(selected_call.get('created_at', ''))}")
+                    if selected_call.get('audio_path'):
+                        st.write(f"**Audio File:** {selected_call.get('audio_path')}")
                 
                 # Transcript (OPEN BY DEFAULT)
                 transcript = selected_call.get('transcript', '')
                 if transcript:
-                    with st.expander("📄 Transcript", expanded=True):  # Open by default
+                    with st.expander("📄 Transcript", expanded=True):
                         st.write(transcript)
                 else:
                     st.info("No transcript available")
-                
-                # Insights (collapsed by default)
-                insights = selected_call.get('insights')
-                if insights:
-                    with st.expander("📊 Insights", expanded=False):
-                        if isinstance(insights, dict):
-                            for key, value in insights.items():
-                                st.write(f"**{key.replace('_', ' ').title()}:**")
-                                if isinstance(value, list):
-                                    for item in value:
-                                        st.write(f"• {item}")
-                                else:
-                                    st.write(value)
-                        else:
-                            st.write(insights)
             elif not st.session_state.show_details and selected_call:
                 st.info("👈 Select a call and details will appear here")
         
@@ -425,7 +392,6 @@ elif page == "Call History":
             
             # Show some quick stats about the filtered results
             resolved_count = sum(1 for c in filtered_calls if c.get('call_outcome') == "resolved")
-            unresolved_count = len(filtered_calls) - resolved_count
             
             col1, col2 = st.columns(2)
             with col1:
