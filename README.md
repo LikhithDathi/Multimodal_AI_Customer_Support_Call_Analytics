@@ -1,34 +1,108 @@
-# Customer Support Intelligence Platform
+# AI Powered Customer Support Intelligence
 
-An end-to-end AI-powered platform that analyzes customer support interactions to extract actionable insights using speech-to-text, large language models, and deterministic reasoning.
+AI Powered Customer Support Intelligence is an internal analytics platform that analyzes recorded customer support calls to extract structured insights such as sentiment, urgency, issue category, and resolution status.
 
-## 🔍 What This System Does
-- Ingests real-world customer support audio in multiple formats (WAV, MP3, M4A, FLAC, OGG)
-- Transcribes calls using Whisper
-- Extracts structured insights using LLMs with robust validation
-- Derives call resolution using deterministic evidence-based logic
-- Stores historical data for analysis
-- Presents insights through a product-style dashboard
+The system is designed to help support operations, QA teams, and managers review interactions efficiently, identify unresolved or high-risk calls, and detect recurring issues — without manually listening to every call.
 
-## 🧠 Key Features
-- Multimodal audio processing
-- LLM-based semantic understanding
-- Human-readable insight cards
-- Call history exploration with filtering
-- Analytics dashboard with actionable conclusions
-- Clean separation of backend and frontend
+This project focuses on **post-call analysis**, not real-time monitoring.
 
-## 🏗 Architecture
-- **Backend:** FastAPI, SQLite, Whisper, Ollama (Phi-3)
-- **Frontend:** Streamlit
-- **AI Pipeline:** Speech-to-text → LLM extraction → deterministic reasoning
-- **Storage:** Structured relational database
+---
 
-## 🚀 Use Cases
-- Customer support quality monitoring
-- Issue trend analysis
-- Operational bottleneck detection
-- Internal support analytics tooling
+## Problem Statement
 
-## 📌 Status
-Fully functional prototype with production-style architecture.
+Customer support teams often struggle with:
+
+- High volumes of recorded calls
+- Limited time for manual review
+- Difficulty identifying unresolved or high-risk interactions
+- Lack of structured insights from unstructured audio data
+
+Most systems capture outcomes, but not **why** those outcomes occurred.
+
+Customer Support Intelligence bridges this gap by converting call audio into **actionable, reviewable insights** that support better operational decisions.
+
+---
+
+## What This System Does
+
+For each uploaded customer support call, the system:
+
+- Transcribes the audio into text
+- Analyzes the transcript to infer:
+  - Customer sentiment
+  - Issue category
+  - Urgency level
+  - Call outcome (resolved / unresolved)
+- Stores structured results for future analysis
+- Provides dashboards to surface trends and risks across calls
+
+The emphasis is on **clarity, traceability, and reviewability**, not black-box automation.
+
+---
+
+## Key Features
+
+### Analyze Call
+- Upload a single call recording
+- View the full transcript
+- Inspect extracted insights side-by-side
+- Download transcripts and analysis results
+
+### Call History
+- Browse previously analyzed calls
+- Filter by:
+  - Issue category
+  - Sentiment
+  - Urgency
+  - Resolution status
+  - Date range
+- Switch between card view and table view
+- Drill down into individual call details
+
+### Analytics Dashboard
+- High-level performance metrics
+- Resolution rate and urgency distribution
+- Identification of high-risk calls
+- Actionable recommendations based on trends
+
+---
+
+## Design Philosophy
+
+This system deliberately avoids treating AI as the final authority.
+
+Key principles:
+
+- Language models are used for **semantic understanding**, not decision authority
+- Final outcomes are inferred using **explicit, rule-based logic**
+- Outputs are designed to be **auditable and explainable**
+- Expectations are clearly set — results depend on audio quality and conversation clarity
+
+This makes the tool suitable for **internal decision support**, not autonomous enforcement.
+
+---
+
+## Known Limitations
+
+This project is a prototype and makes several intentional tradeoffs:
+
+- Speaker roles (agent vs customer) are inferred from transcript structure, not speaker diarization
+- Overlapping speech or noisy audio can reduce analysis quality
+- Resolution status is inferred probabilistically, not guaranteed
+- Optimized for batch, post-call analysis rather than real-time streaming
+- Not designed for large-scale production traffic
+
+These limitations are acknowledged to maintain transparency and trust.
+
+---
+
+## Intended Use
+
+This tool is best suited for:
+
+- Internal QA review
+- Support operations analysis
+- Training and coaching insights
+- Early-stage analytics experimentation
+
+It is **not intended to replace human judgment** or serve as a compliance-grade system.
