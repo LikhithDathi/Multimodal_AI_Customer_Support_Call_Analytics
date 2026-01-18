@@ -26,17 +26,52 @@ st.set_page_config(
 # Sidebar Navigation (BASELINE)
 # -----------------------------
 with st.sidebar:
-    st.title("🎧 Customer Support Intelligence")
+    st.markdown("## 🎧Customer Support Intelligence")
+    st.caption("Post-call analysis and insights")
 
+    st.divider()
+
+    st.markdown("### Analysis")
     page = st.radio(
-        "Navigate",
-        [
-            "Analyze Call",
-            "Call History",
-            "Analytics Dashboard",
-            "System Overview"
-        ]
+        label="",
+        options=["Analyze Call", "Call History", "Analytics Dashboard"],
+        label_visibility="collapsed"
     )
+
+    st.divider()
+
+    st.markdown("### About this page")
+    if page == "Analyze Call":
+        st.caption(
+            "Analyze a recorded customer support call to "
+            "extract sentiment, urgency, and resolution indicators."
+        )
+        st.markdown("**To get started:**")
+        st.markdown("- Upload a call recording")
+
+    elif page == "Call History":
+        st.caption(
+            "View and filter previously analyzed support calls "
+            "to identify patterns and unresolved issues."
+        )
+
+    elif page == "Analytics Dashboard":
+        st.caption(
+            "Explore trends and risk indicators across "
+            "analyzed support calls."
+        )
+
+    st.divider()
+
+    st.markdown("### Next steps")
+    if page == "Analyze Call":
+        st.markdown("- Upload a call")
+    elif page == "Call History":
+        st.markdown("- Review unresolved calls")
+    elif page == "Analytics Dashboard":
+        st.markdown("- Identify recurring issues")
+
+
 
 # -----------------------------
 # Analyze Call
@@ -165,9 +200,19 @@ if page == "Analyze Call":
         st.info("👆 **Upload an audio file to begin analysis**")
         
         # Quick info in columns
-        col_info1, col_info2 = st.columns(2)
-        
+        col_info1, col_info2, col_info3 = st.columns(3)
+
         with col_info1:
+            st.markdown("""
+            **Best results when:**
+            - Audio is clear and audible  
+            - Minimal background noise  
+            - Speakers do not talk over each other  
+            - Conversation is primarily in English  
+            """)
+
+        
+        with col_info2:
             st.markdown("""
             **What you'll get:**
             - Full call transcript
@@ -176,7 +221,7 @@ if page == "Analyze Call":
             - Urgency assessment
             """)
         
-        with col_info2:
+        with col_info3:
             st.markdown("""
             **Supported formats:**
             - WAV
@@ -310,21 +355,27 @@ elif page == "Call History":
         if len(filtered_calls) != len(calls):
             st.success(f"📊 Showing {len(filtered_calls)} of {len(calls)} calls")
         
-        # ==================== VIEW TOGGLE & SORTING ====================
-        # View toggle
-        view_mode = st.radio(
-            "View Mode",
-            ["📋 Card View", "📊 Table View"],
-            horizontal=True,
-            index=0
-        )
+        # ==================== COMPACT VIEW & SORT CONTROLS ====================
+        # Put View Mode and Sort controls side-by-side in one row
+        col_view, col_sort = st.columns(2)
         
-        # Sort control
-        sort_order = st.radio(
-            "Sort calls by",
-            ["Newest First", "Oldest First"],
-            horizontal=True
-        )
+        with col_view:
+            # View toggle
+            view_mode = st.radio(
+                "**View Mode**",
+                ["📋 Card View", "📊 Table View"],
+                horizontal=True,
+                index=0
+            )
+        
+        with col_sort:
+            # Sort control
+            sort_order = st.radio(
+                "**Sort by**",
+                ["Newest First", "Oldest First"],
+                horizontal=True,
+                index=0
+            )
         
         sort_newest_first = sort_order == "Newest First"
         sorted_calls = sorted(
@@ -334,8 +385,12 @@ elif page == "Call History":
         )
         
         order_label = "newest to oldest" if sort_newest_first else "oldest to newest"
+        st.markdown("---")
+
         st.caption(f"Showing {len(sorted_calls)} calls from {order_label}")
         
+        
+        # Rest of your code remains the same...
         if view_mode == "📋 Card View":
             # CARD VIEW
             for c in sorted_calls:
@@ -794,11 +849,3 @@ elif page == "Analytics Dashboard":
         latest_call = max(calls, key=lambda x: x.get('created_at', ''))
         st.caption(f"📅 Data updated: {format_timestamp(latest_call.get('created_at', ''))}")
 
-
-
-# -----------------------------
-# System Overview
-# -----------------------------
-elif page == "System Overview":
-    st.title("ℹ️ System Overview")
-    st.write("Customer Support Call Analytics System")
