@@ -1,9 +1,9 @@
 import streamlit as st
 from config import APP_TITLE, APP_LAYOUT
 
-from pages.analyze_call import render as analyze_call
-from pages.call_history import render as call_history
-from pages.analytics_dashboard import render as analytics_dashboard
+from views.analyze_call import render as analyze_call
+from views.call_history import render as call_history
+from views.analytics_dashboard import render as analytics_dashboard
 
 st.set_page_config(page_title=APP_TITLE, layout=APP_LAYOUT)
 
