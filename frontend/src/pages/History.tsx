@@ -17,20 +17,35 @@ export default function History() {
   const [params, setParams] = useSearchParams()
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
   const [expandedCardId, setExpandedCardId] = useState<number | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadCalls() {
+      setLoading(true)
+      setError(null)
+      
       try {
-        const res = await fetch("http://localhost:8000/calls")
+        // Use environment variable or fallback to localhost
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
+        const res = await fetch(`${apiUrl}/calls`)
+        
+        if (!res.ok) {
+          throw new Error(`Failed to fetch calls: ${res.status} ${res.statusText}`)
+        }
+        
         const data: unknown = await res.json()
 
         if (Array.isArray(data)) {
           setCalls(data as HistoryCall[])
         } else {
-          throw new Error("Invalid response format")
+          throw new Error("Invalid response format from server")
         }
       } catch (err) {
         console.error("Failed to load calls", err)
+        setError(err instanceof Error ? err.message : "Failed to load calls. Please try again.")
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -55,7 +70,6 @@ export default function History() {
     if (sentiment && call.sentiment !== sentiment) return false
     if (category && !call.issue_category.toLowerCase().includes(category.toLowerCase())) return false
 
-    // Use UTC dates for filtering
     const callDate = new Date(call.created_at).getTime()
     if (from) {
       const fromDate = parseFilterDate(from).getTime()
@@ -63,7 +77,6 @@ export default function History() {
     }
     if (to) {
       const toDate = parseFilterDate(to).getTime()
-      // Add 24 hours to include the entire end day
       const toDateEnd = toDate + (24 * 60 * 60 * 1000 - 1)
       if (callDate > toDateEnd) return false
     }
@@ -106,6 +119,44 @@ export default function History() {
 
   function toggleTranscript(callId: number) {
     setExpandedCardId(prev => prev === callId ? null : callId)
+  }
+
+  // Loading State
+  if (loading) {
+    return (
+      <div className="history-page">
+        <div className="loading-container">
+          <div className="loading-skeleton">
+            <div className="skeleton-header"></div>
+            <div className="skeleton-filters"></div>
+            <div className="skeleton-grid">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="skeleton-card"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Error State
+  if (error) {
+    return (
+      <div className="history-page">
+        <div className="error-container">
+          <div className="error-icon">⚠️</div>
+          <h3>Failed to load calls</h3>
+          <p>{error}</p>
+          <button 
+            className="retry-btn"
+            onClick={() => window.location.reload()}
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -230,10 +281,22 @@ export default function History() {
           <div className="empty-state">
             <div className="empty-icon">📞</div>
             <h3>No calls found</h3>
-            <p>No calls match the selected filters. Try adjusting your search criteria.</p>
+            <p>
+              {calls.length === 0 
+                ? "No calls have been analyzed yet. Upload a call to get started."
+                : "No calls match the selected filters. Try adjusting your search criteria."}
+            </p>
             {params.size > 0 && (
               <button className="empty-reset-btn" onClick={resetFilters}>
                 Clear All Filters
+              </button>
+            )}
+            {calls.length === 0 && (
+              <button 
+                className="empty-reset-btn"
+                onClick={() => window.location.href = '/analyze'}
+              >
+                Analyze a Call
               </button>
             )}
           </div>
@@ -264,7 +327,6 @@ export default function History() {
                   <div className="call-info">
                     <div className="call-number">Call #{call.id}</div>
                     <div className="call-date">
-                      {/* FIXED: Using UTC-based formatter */}
                       {formatHistoryDate(call.created_at)}
                     </div>
                   </div>

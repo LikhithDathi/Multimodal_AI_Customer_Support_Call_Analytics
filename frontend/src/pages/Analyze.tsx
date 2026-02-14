@@ -183,6 +183,11 @@ export default function Analyze() {
               <div>
                 <p className="status-title">Analysis failed</p>
                 <p className="status-subtitle">{error}</p>
+                {error.includes('Network') && (
+                  <p className="error-hint">
+                    Check if backend server is running at {import.meta.env.VITE_API_URL}
+                  </p>
+                )}
               </div>
             </div>
           </div>

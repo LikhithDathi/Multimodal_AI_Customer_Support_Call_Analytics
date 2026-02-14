@@ -2,6 +2,7 @@ import os
 import uuid
 import asyncio
 import hashlib
+from app.config import Config
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -26,17 +27,20 @@ app = FastAPI(title="Customer Support Call Analytics API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",  # development
+        "https://your-frontend.vercel.app",  # production - CHANGE THIS
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-UPLOAD_DIR = os.path.join(BASE_DIR, "data", "uploads")
+UPLOAD_DIR = os.path.join(BASE_DIR, Config.UPLOAD_DIR)
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
+MAX_FILE_SIZE = Config.MAX_FILE_SIZE
 
 ALLOWED_EXTENSIONS = {".wav", ".mp3", ".m4a", ".aac", ".ogg", ".flac"}
 ALLOWED_MIME_TYPES = {
