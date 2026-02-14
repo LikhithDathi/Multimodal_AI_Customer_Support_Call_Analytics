@@ -1,0 +1,53 @@
+/* =========================
+   App Layout - CLEAN
+   Minimal, proper spacing
+========================= */
+
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--background, #5d5c5e3d);
+}
+
+.app-layout > .navbar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 1000;
+  flex-shrink: 0;
+}
+
+.app-content {
+  flex: 1;
+  width: 100%;
+  padding: 24px;
+  background: transparent;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .app-content {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-content {
+    padding: 16px;
+  }
+}
+
+/* Full width foundation */
+html, body, #root {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--background, #5d5c5e3d);
+}

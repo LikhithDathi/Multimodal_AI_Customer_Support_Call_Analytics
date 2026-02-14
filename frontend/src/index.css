@@ -1,0 +1,82 @@
+/* =========================
+   GLOBAL STYLES - CLEAN SLATE
+   Remove all Vite default styles
+========================= */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Design Tokens - Light Theme */
+  --primary-color: #a78bfa;
+  --primary-dark: #8b5cf6;
+  --primary-light: #c4b5fd;
+  --secondary-color: #34d399;
+  --background: #5d5c5e3d;
+  --surface: #ffffff;
+  --surface-light: #faf6f6;
+  --text-primary: #2d3748;
+  --text-secondary: #2c2f34;
+  --border: #e2e8f0;
+  
+  /* Layout */
+  --container-max-width: 1700px;
+  --container-padding: 10px;
+  
+  /* Effects */
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--text-primary);
+  background-color: var(--background);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* REMOVE flex, place-items, min-height, min-width */
+}
+
+#root {
+  /* REMOVE max-width, margin, padding, text-align */
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Keep only essential link/button styles if you want */
+a {
+  font-weight: 500;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--primary-dark);
+}
+
+button {
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: var(--surface);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+button:hover {
+  border-color: var(--primary-color);
+}

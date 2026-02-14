@@ -1,0 +1,453 @@
+/* =========================
+   NAVBAR - Enterprise Design System
+   Fixed Sticky Positioning
+========================= */
+
+:root {
+  /* Professional Color Palette */
+  --nav-bg: #0b0e14;
+  --nav-surface: #11161f;
+  --nav-border: #1e2632;
+  --nav-primary: #5f9ea0;
+  --nav-primary-light: #7fb3b5;
+  --nav-primary-dark: #4a7c7e;
+  --nav-text: #ffffff;
+  --nav-text-secondary: #a0b3c6;
+  --nav-hover: rgba(95, 158, 160, 0.08);
+  --nav-active: rgba(95, 158, 160, 0.12);
+  
+  /* Spacing - Fixed */
+  --nav-height: 80px;
+  --nav-height-tablet: 72px;
+  --nav-height-mobile: 68px;
+  --nav-padding: 32px;
+  
+  /* Effects */
+  --nav-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  --nav-transition: all 0.2s ease;
+}
+
+/* =========================
+   Main Container - FIXED STICKY
+========================= */
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--nav-height);
+  padding: 0 var(--nav-padding);
+  background: linear-gradient(135deg, var(--nav-bg), var(--nav-surface));
+  border-bottom: 1px solid var(--nav-border);
+  box-shadow: var(--nav-shadow);
+  
+  /* FIX: Proper sticky positioning */
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  
+  /* Ensure it stays above content */
+  isolation: isolate;
+}
+
+/* FIX: Add a solid background to prevent transparency issues */
+@supports (backdrop-filter: blur(10px)) {
+  .navbar {
+    background: linear-gradient(
+      135deg,
+      rgba(11, 14, 20, 0.98),
+      rgba(17, 22, 31, 0.98)
+    );
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(30, 38, 50, 0.8);
+  }
+}
+
+/* FIX: Ensure navbar doesn't move */
+.navbar {
+  transform: translateZ(0); /* Hardware acceleration */
+  will-change: transform; /* Optimize for sticky */
+}
+
+/* =========================
+   Brand Section
+========================= */
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.brand-icon {
+  font-size: 28px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  transition: var(--nav-transition);
+  line-height: 1; /* Fix height issues */
+}
+
+.brand-text-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand-text {
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  background: linear-gradient(135deg, #ffffff, #e0e7ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brand-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--nav-text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: fit-content;
+}
+
+/* =========================
+   Navigation Links
+========================= */
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 24px;
+  height: 48px;
+  border-radius: 40px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--nav-text-secondary);
+  text-decoration: none;
+  transition: var(--nav-transition);
+  position: relative;
+  border: 1px solid transparent;
+  letter-spacing: 0.3px;
+  white-space: nowrap; /* Prevent text wrap */
+}
+
+.nav-link:hover {
+  color: white;
+  background: var(--nav-hover);
+  border-color: rgba(95, 158, 160, 0.2);
+  transform: translateY(-1px);
+}
+
+.nav-link.active {
+  color: white;
+  background: var(--nav-active);
+  border: 1px solid rgba(95, 158, 160, 0.3);
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Active Dot - FIXED positioning */
+.active-dot {
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: var(--nav-primary);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--nav-primary);
+  opacity: 0;
+  transition: var(--nav-transition);
+}
+
+.nav-link.active .active-dot {
+  opacity: 1;
+}
+
+.nav-icon {
+  font-size: 18px;
+  transition: var(--nav-transition);
+  opacity: 0.8;
+  line-height: 1;
+}
+
+.nav-link:hover .nav-icon {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.nav-link.active .nav-icon {
+  opacity: 1;
+}
+
+/* =========================
+   Profile Section
+========================= */
+
+.navbar-profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 6px 6px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50px;
+  transition: var(--nav-transition);
+  cursor: pointer;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.navbar-profile:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(95, 158, 160, 0.3);
+}
+
+.profile-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--nav-primary-dark), var(--nav-primary));
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.avatar-icon {
+  font-size: 18px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  line-height: 1;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 8px;
+}
+
+.profile-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  line-height: 1.2;
+}
+
+.profile-role {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--nav-text-secondary);
+  letter-spacing: 0.3px;
+}
+
+/* =========================
+   FIX: App Layout Container
+   Add this to your AppLayout.css
+========================= */
+
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--background);
+  /* FIX: Ensure proper stacking context */
+  position: relative;
+  z-index: 1;
+}
+
+.app-content {
+  flex: 1;
+  width: 100%;
+  max-width: var(--container-max-width, 1400px);
+  margin: 0 auto;
+  padding: var(--container-padding, 32px);
+  /* FIX: Ensure content scrolls under navbar properly */
+  position: relative;
+  z-index: 2;
+}
+
+/* =========================
+   Responsive - Fixed Heights
+========================= */
+
+/* Tablet Landscape */
+@media (max-width: 1024px) {
+  .navbar {
+    height: var(--nav-height-tablet);
+    padding: 0 24px;
+  }
+  
+  .brand-text {
+    font-size: 20px;
+  }
+  
+  .nav-link {
+    padding: 8px 20px;
+    height: 44px;
+    font-size: 14px;
+  }
+}
+
+/* Tablet Portrait */
+@media (max-width: 768px) {
+  .navbar {
+    height: var(--nav-height-mobile);
+    padding: 0 20px;
+  }
+  
+  .brand-text {
+    font-size: 18px;
+  }
+  
+  .brand-badge {
+    display: none;
+  }
+  
+  .nav-link {
+    padding: 8px 18px;
+    gap: 8px;
+  }
+  
+  .profile-info {
+    display: none;
+  }
+  
+  .navbar-profile {
+    padding: 6px;
+  }
+  
+  .profile-avatar {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .navbar {
+    height: 64px;
+    padding: 0 16px;
+  }
+  
+  .brand-icon {
+    font-size: 24px;
+  }
+  
+  .brand-text {
+    font-size: 16px;
+  }
+  
+  .nav-label {
+    display: none;
+  }
+  
+  .nav-link {
+    padding: 0;
+    width: 44px;
+    height: 44px;
+    justify-content: center;
+  }
+  
+  .nav-icon {
+    font-size: 20px;
+    margin: 0;
+  }
+  
+  .active-dot {
+    width: 3px;
+    height: 3px;
+    bottom: -1px;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .navbar {
+    height: 60px;
+    padding: 0 12px;
+  }
+  
+  .brand-text {
+    display: none;
+  }
+  
+  .brand-icon {
+    font-size: 26px;
+  }
+  
+  .navbar-links {
+    gap: 4px;
+  }
+  
+  .nav-link {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+/* Ultra Mobile */
+@media (max-width: 360px) {
+  .navbar-profile {
+    display: none;
+  }
+}
+
+/* =========================
+   Print Styles
+========================= */
+
+@media print {
+  .navbar {
+    display: none;
+  }
+}
+
+/* =========================
+   Animation - Reduced Motion
+========================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .navbar,
+  .nav-link,
+  .nav-icon,
+  .active-dot {
+    animation: none;
+    transition: none;
+  }
+}
+
+.navbar {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
