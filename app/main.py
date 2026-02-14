@@ -29,7 +29,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",  # development
-        "https://your-frontend.vercel.app",  # production - CHANGE THIS
+        "https://multimodal-ai-customer-support-call.vercel.app/",  # production - CHANGE THIS
     ],
     allow_credentials=True,
     allow_methods=["*"],
