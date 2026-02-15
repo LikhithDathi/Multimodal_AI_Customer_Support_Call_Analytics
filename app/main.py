@@ -25,12 +25,16 @@ from app.analytics import calculate_operational_risk
 # -----------------------------
 app = FastAPI(title="Customer Support Call Analytics API")
 
+# Get allowed origins from environment variable
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "")
+if allowed_origins_str:
+    origins = [origin.strip() for origin in allowed_origins_str.split(",")]
+else:
+    origins = ["http://localhost:5173"]  # fallback
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",  # development
-        "https://multimodal-ai-customer-support-call.vercel.app/" # Production
-    ],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
